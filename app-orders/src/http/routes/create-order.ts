@@ -1,10 +1,13 @@
 import { randomUUID } from 'node:crypto'
+import { setTimeout } from 'node:timers/promises'
+
 import { trace } from '@opentelemetry/api'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import z from 'zod'
 import { dispatchOrderCreated } from '../../broker/messages/order-created.ts'
 import { db } from '../../db/db.ts'
 import { schema } from '../../db/schema/index.ts'
+import { tracer } from '../../tracer/tracer.ts'
 
 export const createOrderRoute: FastifyPluginAsyncZod = async app => {
   app.post(
@@ -31,6 +34,13 @@ export const createOrderRoute: FastifyPluginAsyncZod = async app => {
         amount,
         customerId: '52c75143-8f31-4024-8a25-bdbff5cb1c5a',
       })
+
+      const span = tracer.startSpan('eu acho que aqui ta dando merda')
+
+      span.setAttribute('teste', 'Hello World')
+
+      await setTimeout(2000)
+      span.end()
 
       trace.getActiveSpan()?.setAttribute('order_id', orderId)
 
