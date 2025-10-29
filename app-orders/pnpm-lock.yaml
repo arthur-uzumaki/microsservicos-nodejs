@@ -17,6 +17,9 @@ importers:
       '@fastify/swagger':
         specifier: ^9.5.2
         version: 9.5.2
+      '@opentelemetry/api':
+        specifier: ^1.9.0
+        version: 1.9.0
       '@opentelemetry/auto-instrumentations-node':
         specifier: ^0.66.0
         version: 0.66.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))
@@ -57,9 +60,6 @@ importers:
       '@biomejs/biome':
         specifier: 2.3.0
         version: 2.3.0
-      '@opentelemetry/api':
-        specifier: ^1.9.0
-        version: 1.9.0
       '@types/amqplib':
         specifier: ^0.10.8
         version: 0.10.8

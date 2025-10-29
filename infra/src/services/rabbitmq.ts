@@ -1,0 +1,61 @@
+
+import * as awsx from '@pulumi/awsx'
+import { cluster } from '../cluster'
+import {loadBalancer, networkLoadBalancer} from '../load-balancer'
+
+
+const rabbitMQAdminTargetGroup =  loadBalancer.createTargetGroup('rabbitmq-target', {
+  port: 15672,
+  protocol: 'HTTP',
+  healthCheck: {
+    path: '/',
+    protocol: 'HTTP'
+  }
+})
+
+export const rabbitmqAdminHttpListener = loadBalancer.createListener('rabbitmq-admin-listener', {
+  port: 15672,
+  protocol: 'HTTP',
+  targetGroup: rabbitMQAdminTargetGroup
+
+})
+
+
+
+const amqpTargetGroup = networkLoadBalancer.createTargetGroup('amqp-target', {
+  protocol: 'TCP',
+  port:5672,
+  targetType: 'ip',
+  healthCheck: {
+    protocol: 'TCP',
+    port: "5672"
+  }
+}) 
+
+export const amqpListener = networkLoadBalancer.createListener('amqp-listener', {
+  port: 5672,
+  protocol: 'TCP',
+  targetGroup: amqpTargetGroup
+})
+
+export const rabbitMQService = new awsx.classic.ecs.FargateService('fargate-rabbitmq', {
+  cluster,
+  desiredCount: 1,
+  waitForSteadyState: false,
+  taskDefinitionArgs: {
+    container: {
+      image: 'rabbitmq:3-management',
+      cpu: 256,
+      memory: 512,
+      portMappings: [rabbitmqAdminHttpListener,amqpListener],
+      environment: [
+        {
+          name: 'RABBITMQ_DEFAULT_USER', value: 'admin',
+        },
+        {
+          name: "RABBITMQ_DEFAULT_PASS", value: 'admin'
+        }
+      ]
+    }
+  }
+}) 
